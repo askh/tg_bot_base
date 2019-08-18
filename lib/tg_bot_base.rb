@@ -1,6 +1,6 @@
 require "tg_bot_base/version"
 
-require 'telegram/bot'
+require "telegram/bot"
 
 require "pid_file_block"
 require "pid_file_block/application"
