@@ -56,9 +56,20 @@ module TgBotBase
                 @bot_user_id = bot_user_data['result']['id'].to_i;
               end
               
-              @bot.listen do |message|
-                self.process_message(message: message)
+              # @bot.listen do |message|
+              #   self.process_message(message: message)
+              # end
+              stop_listen = false
+              old_signal_int = Signal.trap("INT") do
+                stop_listen = true
               end
+              until(stop_listen) do
+                @bot.fetch_updates do |message|
+                  self.process_message(message: message)
+                end
+              end
+              Signal.trap("INT", old_signal_int)
+              break
             end
           rescue Telegram::Bot::Exceptions::ResponseError => e
             logger.error "Disconnected: #{e.message}"
