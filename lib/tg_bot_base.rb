@@ -42,7 +42,11 @@ module TgBotBase
     def run
       PidFileBlock::Application.run(piddir: @config['pidfile_dir'],
                                     pidfile: @config['pidfile_name']) do
-        while true
+        continue_work = true
+        old_signal_int = Signal.trap("INT") do
+          continue_work = false
+        end
+        while continue_work
           begin
             Telegram::Bot::Client.run(config['telegram_token'],
                                       logger: @logger) do |bot|
@@ -59,11 +63,7 @@ module TgBotBase
               # @bot.listen do |message|
               #   self.process_message(message: message)
               # end
-              stop_listen = false
-              old_signal_int = Signal.trap("INT") do
-                stop_listen = true
-              end
-              until(stop_listen) do
+              while(continue_work) do
                 @bot.fetch_updates do |message|
                   self.process_message(message: message)
                 end
