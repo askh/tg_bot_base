@@ -54,7 +54,7 @@ module TgBotBase
               bot_user_data = bot.api.get_me
               @bot_user_id = nil
               if !bot_user_data || !bot_user_data['ok']
-                self.logger.error("Can't get bot id");
+                @logger.error("Can't get bot id");
                 break;
               else
                 @bot_user_id = bot_user_data['result']['id'].to_i;
@@ -63,6 +63,7 @@ module TgBotBase
               # @bot.listen do |message|
               #   self.process_message(message: message)
               # end
+              @logger.info("Bot started.")
               while(continue_work) do
                 @bot.fetch_updates do |message|
                   self.process_message(message: message)
@@ -72,13 +73,13 @@ module TgBotBase
               break
             end
           rescue Telegram::Bot::Exceptions::ResponseError => e
-            logger.error "Disconnected: #{e.message}"
+            @logger.error "Disconnected: #{e.message}"
             sleep @disconnect_sleep_time
           rescue Faraday::ConnectionFailed => e
-            logger.error "Disconnected: #{e.message}"
+            @logger.error "Disconnected: #{e.message}"
             sleep @disconnect_sleep_time
           rescue RuntimeError => e
-            logger.error "Error: #{e.message}\n#{e.backtrace}"
+            @logger.error "Error: #{e.message}\n#{e.backtrace}"
             raise
           end
         end
@@ -109,11 +110,11 @@ module TgBotBase
     
     def send_message(chat_id:, text:, source_time: nil)
       if @mute_before && source_time && source_time < @mute_before
-        self.logger.debug("Mute old message,
+        @logger.debug("Mute old message,
                           chat_id: #{chat_id},
                           text: #{text}")
       else
-        self.logger.debug("Sending message, chat_id: #{chat_id}, text: #{text}")
+        @logger.debug("Sending message, chat_id: #{chat_id}, text: #{text}")
         @bot.api.send_message(chat_id: chat_id, text: text)
       end
     end
