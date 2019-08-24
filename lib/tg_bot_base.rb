@@ -5,6 +5,8 @@ require "telegram/bot"
 require "pid_file_block"
 require "pid_file_block/application"
 
+require "timeout"
+
 module TgBotBase
   
   class ConfigFileNotFound < RuntimeError
