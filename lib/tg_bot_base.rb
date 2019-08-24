@@ -45,12 +45,14 @@ module TgBotBase
       PidFileBlock::Application.run(piddir: @config['pidfile_dir'],
                                     pidfile: @config['pidfile_name']) do
         continue_work = true
+        force_exit_thread = nil
         stop_bot = proc do
           continue_work = false
-          force_exit_timeout = 11
-          Timeout::timeout(force_exit_timeout) do
-            exit 0
-          end
+          force_exit_thread = Thread.new do
+            force_exit_timeout = 11
+            sleep force_exit_timeout
+            Kernel::exit 0
+          end          
         end
         old_signal_int = Signal.trap("INT", stop_bot)
         old_signal_term = Signal.trap("TERM", stop_bot)
@@ -79,6 +81,7 @@ module TgBotBase
               end
               Signal.trap("INT", old_signal_int)
               Signal.trap("TERM", old_signal_term)
+              force_exit_thread.exit
               break
             end
           rescue Telegram::Bot::Exceptions::ResponseError => e
