@@ -43,10 +43,16 @@ module TgBotBase
       PidFileBlock::Application.run(piddir: @config['pidfile_dir'],
                                     pidfile: @config['pidfile_name']) do
         continue_work = true
-        old_signal_int = Signal.trap("INT") do
+        stop_bot = proc do
           continue_work = false
+          force_exit_timeout = 11
+          Timeout::timeout(force_exit_timeout) do
+            exit 0
+          end
         end
-        while continue_work
+        old_signal_int = Signal.trap("INT", stop_bot)
+        old_signal_term = Signal.trap("TERM", stop_bot)
+        while continue_work do
           begin
             Telegram::Bot::Client.run(config['telegram_token'],
                                       logger: @logger) do |bot|
@@ -70,6 +76,7 @@ module TgBotBase
                 end
               end
               Signal.trap("INT", old_signal_int)
+              Signal.trap("TERM", old_signal_term)
               break
             end
           rescue Telegram::Bot::Exceptions::ResponseError => e
