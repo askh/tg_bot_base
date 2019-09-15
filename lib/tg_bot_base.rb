@@ -132,7 +132,7 @@ module TgBotBase
     end
 
     def send_message_answer(to_message:, text:)
-      send_message(chat_id: to_message.chat_id,
+      send_message(chat_id: to_message.chat.id,
                    text: text,
                    source_time: to_message.date)
     end
