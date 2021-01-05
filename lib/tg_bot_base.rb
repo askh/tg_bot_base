@@ -120,27 +120,27 @@ module TgBotBase
       end
     end
     
-    def send_message(chat_id:, text:, source_time: nil)
+    def send_message(source_time: nil, **args)
       if @mute_before && source_time && source_time < @mute_before
         @logger.debug("Mute old message,
-                          chat_id: #{chat_id},
-                          text: #{text}")
+                          chat_id: #{args[:chat_id]},
+                          text: #{args[:text]}")
       else
-        @logger.debug("Sending message, chat_id: #{chat_id}, text: #{text}")
-        @bot.api.send_message(chat_id: chat_id, text: text)
+        @logger.debug("Sending message, chat_id: #{args[:chat_id]}, text: #{args[:text]}")
+        @bot.api.send_message(**args)
       end
     end
 
-    def send_message_answer(to_message:, text:)
+    def send_message_answer(to_message:, **args)
       send_message(chat_id: to_message.chat.id,
-                   text: text,
-                   source_time: to_message.date)
+                   source_time: to_message.date,
+                   **args)
     end
 
-    def send_message_private_answer(to_message:, text:)
+    def send_message_private_answer(to_message:, **args)
       send_message(chat_id: to_message.from.id,
-                   text: text,
-                   source_time: to_message.date)
+                   source_time: to_message.date,
+                   **args)
     end
 
     protected
